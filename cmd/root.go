@@ -1,30 +1,27 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/yrs147/cling-ably/internal/chat"
 )
-
-
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "cling-ably",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:   "cling",
+	Short: "A CLI chat app using Ably",
+	Long: `Cling is a CLI chat application that allows user to communicate
+	with others in real time through their CLI!!!`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		err := InitializeAblyAndSubscribe()
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -36,6 +33,9 @@ func Execute() {
 	}
 }
 
+var username string
+var roomCode string
+
 func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
@@ -46,6 +46,27 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.Flags().StringVarP(&username, "username", "u", "defaultUsername", "Your username for the chat")
+	rootCmd.Flags().StringVarP(&roomCode, "room", "r", "defaultRoomCode", "Chat room code")
 }
 
+func InitializeAblyAndSubscribe() error {
+    // Initialize the Ably client with the username as the client ID
+    client, err := chat.InitializeClient(roomCode, username)
+    if err != nil {
+        fmt.Printf("Error initializing Ably client: %v\n", err)
+        return err
+    }
+
+    unsubscribe, err := chat.SubscribeToChat(client, roomCode, username)
+    if err != nil {
+        fmt.Printf("Error subscribing to chat: %v\n", err)
+        return err
+    }
+    defer unsubscribe()
+
+    // Add any additional logic or commands you want to execute here
+
+    return nil
+}
 
