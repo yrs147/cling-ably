@@ -8,12 +8,22 @@ import (
 	"github.com/yrs147/cling-ably/internal/chat"
 )
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "cling",
-	Short: "A CLI chat app using Ably",
-	Long: `Cling is a CLI chat application that allows user to communicate
-	with others in real time through their CLI!!!`,
+    Use:   "cling",
+    Short: "A CLI chat app using Ably",
+    Long:  "Cling is a CLI chat application that allows users to communicate in real-time through their CLI",
+    // Run: func(cmd *cobra.Command, args []string) {
+    //     // Your chat logic goes here, using the username, roomCode, and message flags.
+    //     // For example, you can use these flags to create/join a chat room or send messages.
+    // },
+}
+
+
+// rootCmd represents the base command when called without any subcommands
+var cling = &cobra.Command{
+	Use:   "connect",
+	Short: "Connect command is used to create chatrooms",
+	Long: `Connect command is used to create chatroom by passing username and roomname as flag`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
@@ -46,8 +56,10 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	rootCmd.Flags().StringVarP(&username, "username", "u", "defaultUsername", "Your username for the chat")
-	rootCmd.Flags().StringVarP(&roomCode, "room", "r", "defaultRoomCode", "Chat room code")
+	cling.Flags().StringVarP(&username, "username", "u", "defaultUsername", "Your username for the chat")
+	cling.Flags().StringVarP(&roomCode, "room", "r", "defaultRoomCode", "Chat room code")
+
+	rootCmd.AddCommand(cling)
 }
 
 func InitializeAblyAndSubscribe() error {
