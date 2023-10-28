@@ -1,16 +1,18 @@
 package chat
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/ably/ably-go/ably"
 	"github.com/joho/godotenv"
 )
 
 // InitializeClient initializes the Ably client.
-func InitializeClient(ablyKey, username string) (*ably.Realtime, error) {
+func InitializeClient(username string) (*ably.Realtime, error) {
 	err := godotenv.Load(".env")
 	if err != nil {
 		fmt.Println("Error loading environment variables file")
@@ -28,60 +30,67 @@ func InitializeClient(ablyKey, username string) (*ably.Realtime, error) {
 }
 
 // SubscribeToChat subscribes to chat messages in the specified room.
-func SubscribeToChat(client *ably.Realtime, roomName, username string) (func(), error) {
+func SubscribeToChat(client *ably.Realtime, roomName, username string) {
 	channel := client.Channels.Get(roomName)
 
-	unsubscribe, err := subscribeToEvent(channel, username)
-	if err != nil {
-		return nil, err
-	}
-	// Let the user send messages
-	for {
-		fmt.Print("Type a message (or 'exit' to leave): ")
-		var message string
-		fmt.Scanln(&message)
-
-		if message == "exit" {
-			break
+	_, err := channel.SubscribeAll(context.Background(), func(msg *ably.Message) {
+		// Check if the message is not from the current user
+		if msg.ClientID != username {
+			fmt.Printf("[%s]: %s\n", msg.ClientID, msg.Data)
 		}
-
-		publish(channel, username, message)
+	})
+	if err != nil {
+		err := fmt.Errorf("subscribing to channel: %w", err)
+		fmt.Println(err)
 	}
 
-	return unsubscribe, nil
+	// Let the user send messages
+	publishing(channel)
 }
 
-// PublishMessage publishes a message to the chat room.
-// func PublishMessage(client *ably.Realtime, roomName, username, message string) error {
-// 	channel := client.Channels.Get(roomName)
-
-// 	err := publish(channel, username, message)
-// 	return err
-// }
 
 func subscribeToEvent(channel *ably.RealtimeChannel, username string) (func(), error) {
 	unsubscribe, err := channel.Subscribe(context.Background(), "message", func(msg *ably.Message) {
-		fmt.Printf("Received message from %v: '%v'\n", msg.ClientID, msg.Data)
+		if msg.ClientID != username {
+			// Display received messages from other users
+			fmt.Printf("[%s]: %v\n", msg.ClientID, msg.Data)
+		}
 	})
 	if err != nil {
 		fmt.Printf("Error subscribing to channel: %v\n", err)
 		return nil, err
 	}
 
-	err = channel.Presence.Enter(context.Background(), username)
-	if err != nil {
-		fmt.Printf("Error announcing presence: %v\n", err)
-		return nil, err
+	// Subscribe to presence events (people entering and leaving) on the channel
+	_, pErr := channel.Presence.SubscribeAll(context.Background(), func(msg *ably.PresenceMessage) {
+		if msg.Action == ably.PresenceActionEnter {
+			fmt.Printf("%v has entered the chat\n", msg.ClientID)
+		} else if msg.Action == ably.PresenceActionLeave {
+			fmt.Printf("%v has left the chat\n", msg.ClientID)
+		}
+	})
+	if pErr != nil {
+		err := fmt.Errorf("subscribing to presence in channel: %w", pErr)
+		fmt.Println(err)
 	}
 
 	return unsubscribe, nil
 }
 
-func publish(channel *ably.RealtimeChannel, username, message string) error {
-	err := channel.Publish(context.Background(), "message", fmt.Sprintf("[%s]: %s", username, message))
-	if err != nil {
-		fmt.Printf("Error publishing message: %v\n", err)
-	}
+func publishing(channel *ably.RealtimeChannel) {
+	
+	reader := bufio.NewReader(os.Stdin)
 
-	return err
+	for {
+		text, _ := reader.ReadString('\n')
+		text = strings.ReplaceAll(text, "\n", "")
+
+		// Publish the message typed in to the Ably Channel
+		err := channel.Publish(context.Background(), "message", text)
+		// await confirmation that message was received by Ably
+		if err != nil {
+			err := fmt.Errorf("publishing to channel: %w", err)
+			fmt.Println(err)
+		}
+	}
 }
