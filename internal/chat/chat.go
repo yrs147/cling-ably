@@ -9,6 +9,7 @@ import (
 
 	"github.com/ably/ably-go/ably"
 	"github.com/joho/godotenv"
+	"github.com/yrs147/cling-ably/internal/translate"
 )
 
 // InitializeClient initializes the Ably client.
@@ -36,7 +37,11 @@ func SubscribeToChat(client *ably.Realtime, roomName, username string) {
 	_, err := channel.SubscribeAll(context.Background(), func(msg *ably.Message) {
 		// Check if the message is not from the current user
 		if msg.ClientID != username {
-			fmt.Printf("[%s]: %s\n", msg.ClientID, msg.Data)
+			text,err := translate.Translate(msg.Data,"en")
+			if err!=nil {
+				fmt.Print(err)
+			}
+			fmt.Printf("[%s]: %s\n", msg.ClientID, text)
 		}
 	})
 	if err != nil {
@@ -84,6 +89,7 @@ func publishing(channel *ably.RealtimeChannel) {
 	for {
 		text, _ := reader.ReadString('\n')
 		text = strings.ReplaceAll(text, "\n", "")
+		// final := translate.TranslateMsg(text,"en")
 
 		// Publish the message typed in to the Ably Channel
 		err := channel.Publish(context.Background(), "message", text)
