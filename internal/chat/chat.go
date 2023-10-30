@@ -31,13 +31,13 @@ func InitializeClient(username string) (*ably.Realtime, error) {
 }
 
 // SubscribeToChat subscribes to chat messages in the specified room.
-func SubscribeToChat(client *ably.Realtime, roomName, username string) {
+func SubscribeToChat(client *ably.Realtime, roomName, username string, lang string) {
 	channel := client.Channels.Get(roomName)
 
 	_, err := channel.SubscribeAll(context.Background(), func(msg *ably.Message) {
 		// Check if the message is not from the current user
 		if msg.ClientID != username {
-			text,err := translate.Translate(msg.Data,"en")
+			text,err := translate.Translate(msg.Data,lang)
 			if err!=nil {
 				fmt.Print(err)
 			}

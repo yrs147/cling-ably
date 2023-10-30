@@ -35,6 +35,7 @@ func Execute() {
 
 var username string
 var roomCode string
+var roomLang string
 
 func init() {
 	// Here you will define your flags and configuration settings.
@@ -48,6 +49,7 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.Flags().StringVarP(&username, "username", "u", "defaultUsername", "Your username for the chat")
 	rootCmd.Flags().StringVarP(&roomCode, "room", "r", "defaultRoomCode", "Chat room code")
+    rootCmd.Flags().StringVarP(&roomLang, "language", "l", "en", "Chat room language code")
 }
 
 func InitializeAblyAndSubscribe() error {
@@ -58,7 +60,7 @@ func InitializeAblyAndSubscribe() error {
         return err
     }
 
-    chat.SubscribeToChat(client, roomCode, username)
+    chat.SubscribeToChat(client, roomCode, username,roomLang)
     
 
     // Add any additional logic or commands you want to execute here
