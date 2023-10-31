@@ -2,10 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
+	"github.com/jroimartin/gocui"
 	"github.com/spf13/cobra"
 	"github.com/yrs147/cling-ably/internal/chat"
+	"github.com/yrs147/cling-ably/tui"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -17,6 +20,7 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Creating Chatroom")
 		err := InitializeAblyAndSubscribe()
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
@@ -24,13 +28,31 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+var uiCmd = &cobra.Command{
+	Use:   "ui",
+	Short: "Start the UI",
+	Run: func(cmd *cobra.Command, args []string) {
+		g, err := tui.CreateGui()
+		if err != nil {
+			log.Panicln(err)
+		}
+		defer g.Close()
+
+		if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
+			log.Panicln(err)
+		}
+	},
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
-	}
+    rootCmd.AddCommand(uiCmd)
+
+    err := rootCmd.Execute()
+    if err != nil {
+        os.Exit(1)
+    }
 }
 
 var username string
@@ -49,22 +71,24 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.Flags().StringVarP(&username, "username", "u", "defaultUsername", "Your username for the chat")
 	rootCmd.Flags().StringVarP(&roomCode, "room", "r", "defaultRoomCode", "Chat room code")
-    rootCmd.Flags().StringVarP(&roomLang, "language", "l", "en", "Chat room language code")
+	rootCmd.Flags().StringVarP(&roomLang, "language", "l", "en", "Chat room language code")
+
+	uiCmd.Flags().StringVarP(&username, "username", "u", "defaultUsername", "Your username for the chat")
+	uiCmd.Flags().StringVarP(&roomCode, "room", "r", "defaultRoomCode", "Chat room code")
+	uiCmd.Flags().StringVarP(&roomLang, "language", "l", "en", "Chat room language code")
 }
 
 func InitializeAblyAndSubscribe() error {
-    // Initialize the Ably client with the username as the client ID
-    client, err := chat.InitializeClient(username)
-    if err != nil {
-        fmt.Printf("Error initializing Ably client: %v\n", err)
-        return err
-    }
+	// Initialize the Ably client with the username as the client ID
+	client, err := chat.InitializeClient(username)
+	if err != nil {
+		fmt.Printf("Error initializing Ably client: %v\n", err)
+		return err
+	}
 
-    chat.SubscribeToChat(client, roomCode, username,roomLang)
-    
+	chat.SubscribeToChat(client, roomCode, username, roomLang)
 
-    // Add any additional logic or commands you want to execute here
+	// Add any additional logic or commands you want to execute here
 
-    return nil
+	return nil
 }
-
