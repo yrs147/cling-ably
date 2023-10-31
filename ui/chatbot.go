@@ -1,7 +1,4 @@
-package frontend
-
-// A simple program demonstrating the text area component from the Bubbles
-// component library.
+package ui
 
 import (
 	"fmt"
@@ -11,10 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-)
-
-type (
-	errMsg error
+	"github.com/yrs147/cling-ably/internal/chat" // Import your chat package
 )
 
 type model struct {
@@ -57,115 +51,65 @@ Type a message and press Enter to send.`)
 }
 
 func (m model) Init() tea.Cmd {
-	return textarea.Blink
+	return nil
 }
-
+// 	m.textarea, cmd = m.textarea.Update(msg)
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var (
-		tiCmd tea.Cmd
-		vpCmd tea.Cmd
-	)
+	var cmd tea.Cmd
+	client, err := chat.InitializeClient("Nina")
+	channel := client.Channels.Get("sample")
 
-	m.textarea, tiCmd = m.textarea.Update(msg)
-	m.viewport, vpCmd = m.viewport.Update(msg)
+	m.textarea, cmd = m.textarea.Update(msg)
 
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyCtrlC, tea.KeyEsc:
-			fmt.Println(m.textarea.Value())
-			return m, tea.Quit
-		case tea.KeyEnter:
-			m.messages = append(m.messages, m.senderStyle.Render("You: ")+m.textarea.Value())
-			m.viewport.SetContent(strings.Join(m.messages, "\n"))
-			m.textarea.Reset()
-			m.viewport.GotoBottom()
+	if msg, ok := msg.(tea.KeyMsg); ok {
+		if msg.Type == tea.KeyEnter {
+			text := m.textarea.View()
+
+			// Handle sending the message directly in the UI
+			chat.Publishing(channel, text)
+			if err != nil {
+				fmt.Println("Error sending message:", err)
+			}
+
+			m.textarea = textarea.New() // Clear the textarea
 		}
-
-	// We handle errors just like any other message
-	case errMsg:
-		m.err = msg
-		return m, nil
 	}
 
-	return m, tea.Batch(tiCmd, vpCmd)
+	// Handle receiving messages directly in the UI
+	newMessages, err := chat.SubscribeToChat(client, "sample", "Nina", "en")
+	if err != nil {
+		fmt.Println("Error receiving messages:", err)
+	}
+
+	// Update the messages slice with new messages
+	m.messages = append(m.messages, newMessages...)
+
+	return m, cmd
 }
+
+
 
 func (m model) View() string {
-    // Create a larger border style for your chat UI
-    borderStyle := lipgloss.NewStyle().
-        BorderStyle(lipgloss.DoubleBorder()).
-        BorderForeground(lipgloss.Color("63")).
-        MarginTop(1).
-        Padding(1, 2).
-        Width(34)
+	borderStyle := lipgloss.NewStyle().
+		BorderStyle(lipgloss.DoubleBorder()).
+		BorderForeground(lipgloss.Color("63")).
+		MarginTop(1).
+		Padding(1, 2).
+		Width(34)
 
-    // Define the chatroom heading
-    heading := " Chatroom "
+	heading := " Chatroom "
 
-    // Create a style for the heading
-    headingStyle := lipgloss.NewStyle().
-        Bold(true).
-        Foreground(lipgloss.Color("250")).
-        Background(lipgloss.Color("63"))
+	headingStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("250")).
+		Background(lipgloss.Color("63"))
 
-    // Combine the heading and chat UI
-    borderedChatUI := borderStyle.Render(fmt.Sprintf(
-        "%s\n%s\n\n%s",
-        headingStyle.Render(heading),
-        m.viewport.View(),
-        m.textarea.View(),
-    ) + "\n\n")
+	borderedChatUI := borderStyle.Render(fmt.Sprintf(
+		"%s\n%s\n\n%s",
+		headingStyle.Render(heading),
+		m.textarea.View(),
+		strings.Join(m.messages, "\n"),
+	) + "\n\n")
 
-    return borderedChatUI
+	return borderedChatUI
 }
-
-
-
-// func (m model) View() string {
-//     // Create a larger border style for your chat UI
-//     borderStyle := lipgloss.NewStyle().
-//         BorderStyle(lipgloss.DoubleBorder()).
-//         BorderForeground(lipgloss.Color("63")).
-//         MarginTop(1).
-//         Padding(1, 2).
-//         Width(34)
-
-//     // Define the chatroom heading
-//     heading := " Chatroom "
-
-//     // Calculate the heading position to center it
-//     headingWidth := len(heading)
-//     leftPadding := (34 - headingWidth - 4) / 2 // Subtract border padding
-//     rightPadding := leftPadding
-//     if 34%2 != 0 {
-//         rightPadding++
-//     }
-
-//     // Create a style for the heading
-//     headingStyle := lipgloss.NewStyle().
-//         Bold(true).
-//         Foreground(lipgloss.Color("250")).
-//         Background(lipgloss.Color("63")).
-//         Padding(0, leftPadding, 0, rightPadding)
-
-//     // Calculate the chat UI content height and adjust it
-//     chatUIHeight := 16 // Adjust the height as needed
-//     textAreaHeight := chatUIHeight - 4 // Adjust for the input area
-//     textAreaTopPadding := chatUIHeight - textAreaHeight
-
-//     // Create a style for the chat UI content
-//     chatUIStyle := lipgloss.NewStyle().
-//         Width(34). // Adjust the width as needed
-//         Height(chatUIHeight - 4) // Adjust for the border and heading
-
-//     // Combine the heading and chat UI
-//     borderedChatUI := borderStyle.Render(fmt.Sprintf(
-//         "%s\n%s\n%s",
-//         headingStyle.Render(heading),
-//         chatUIStyle.Render(m.viewport.View()),
-//         strings.Repeat("\n", textAreaTopPadding)+m.textarea.View(),
-//     ) + "\n\n")
-
-//     return borderedChatUI
-// }
