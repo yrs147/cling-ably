@@ -11,6 +11,10 @@ import (
 	"github.com/yrs147/cling-ably/tui"
 )
 
+var username string
+var roomCode string
+var roomLang string
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "cling",
@@ -32,7 +36,7 @@ var uiCmd = &cobra.Command{
 	Use:   "ui",
 	Short: "Start the UI",
 	Run: func(cmd *cobra.Command, args []string) {
-		g, err := tui.CreateGui()
+		g, err := tui.CreateGui(username,roomCode,roomLang)
 		if err != nil {
 			log.Panicln(err)
 		}
@@ -54,10 +58,6 @@ func Execute() {
         os.Exit(1)
     }
 }
-
-var username string
-var roomCode string
-var roomLang string
 
 func init() {
 	// Here you will define your flags and configuration settings.
