@@ -17,7 +17,8 @@ Cling supports the following languages with their language codes:
 - **Spanish (es)**
 -  **Russian (ru)**
 -  **Spanish (es)**
--  
+-  **Japanese (js)**
+-  **Chinese (zh)**
 
 ## Prerequisites
 Before you get started with Cling, ensure you have the following prerequisites installed:
