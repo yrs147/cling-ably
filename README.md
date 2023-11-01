@@ -1,5 +1,6 @@
 # Cling 
-![cling-removebg-preview (1)](https://github.com/yrs147/cling-ably/assets/98258627/b9c84f6d-19a7-4a4e-b7d9-766091add686)
+![cling-removebg-preview (1)](https://github.com/yrs147/cling-ably/assets/98258627/be18c246-db29-4a01-b494-661df2863fdd)
+
 
 
 ## Overview
