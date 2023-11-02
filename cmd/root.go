@@ -38,14 +38,7 @@ var roomCode string
 var roomLang string
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cling-ably.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
+	
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.Flags().StringVarP(&username, "username", "u", "defaultUsername", "Your username for the chat")
 	rootCmd.Flags().StringVarP(&roomCode, "room", "r", "defaultRoomCode", "Chat room code")
@@ -62,8 +55,6 @@ func InitializeAblyAndSubscribe() error {
 
     chat.SubscribeToChat(client, roomCode, username,roomLang)
     
-
-    // Add any additional logic or commands you want to execute here
 
     return nil
 }

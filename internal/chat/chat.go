@@ -37,7 +37,7 @@ func SubscribeToChat(client *ably.Realtime, roomName, username string, lang stri
 	fmt.Printf("🚀 Welcome to %s!\n", roomName)
 	fmt.Printf("👉 Enter your message below: (type 'exit' to leave)\n")
 
-	memberColors := make(map[string]int) // Map to store member colors
+	memberColors := make(map[string]int) 
 
 	_, err := channel.SubscribeAll(context.Background(), func(msg *ably.Message) {
 		if msg.ClientID != username {
@@ -47,19 +47,19 @@ func SubscribeToChat(client *ably.Realtime, roomName, username string, lang stri
 				return
 			}
 			
-			// Determine color for the member
+			// Determine and Assign color for the member
 			color, exists := memberColors[msg.ClientID]
 			if !exists {
-				// Assign a random color for the member
+				
 				color = len(memberColors) + 1
 				memberColors[msg.ClientID] = color
 			}
 			
-			// Use color escape codes for different colors
-			colorCode := 31 + color // Start from color code 32 (red)
+		
+			colorCode := 31 + color 
 			
-			// Clear the input line and print the message with the chosen color
-			fmt.Printf("\033[2K\r\033[%dm👉 [%s]: %s\n\033[0m👉 You: ", colorCode, msg.ClientID, text)
+	
+			fmt.Printf("\033[2K\r\033[%dm👉 %s: %s\n\033[0m👉 You: ", colorCode, msg.ClientID, text)
 		}
 	})
 
@@ -87,9 +87,7 @@ func publishing(channel *ably.RealtimeChannel) {
 		if err != nil {
 			fmt.Printf("Error publishing message: %v\n", err)
 		}
-		// Overwrite the input line and keep it intact
-		// fmt.Printf("\033[2K\r👉 You: %s", text)
+		
 	}
-	// The chat loop has ended, print a new input line
-	fmt.Printf("\033[2K\r👉 Enter your message below: (type 'exit' to leave)\n")
+	
 }
