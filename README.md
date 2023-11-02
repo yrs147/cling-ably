@@ -39,18 +39,20 @@ docker run -it -p 5000:5000 libretranslate/libretranslate --load-only en,hi,fr,d
 git clone https://github.com/yrs147/cling-ably.git
 cd cling-ably
 ```
-3. Add the Dependencies
+3. Get your `ABLY_KEY` and add it to the `.env` file
+
+4. Add the Dependencies
 ```
 go mod tidy
 
 ```
 
-4. Build the binary
+5. Build the binary
 ```
 go build -o cling
 ```
 
-5. Run Cling
+6. Run Cling
 
 ```
 ./cling -u <username> -r <roomname> -l <preferredlanguage>
