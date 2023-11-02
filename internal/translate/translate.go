@@ -19,18 +19,3 @@ func Translate(msg interface{}, targetLang string) (string, error) {
 
 	return trtext, nil
 }
-
-// func TranslateMsg(msg string, targetLang string) string {
-
-// 	translate := tr.New(tr.Config{
-// 		Url: "http://127.0.0.1:5000",
-// 		Key: "",
-// 	})
-
-// 	trtext, err := translate.Translate(msg, "auto", targetLang)
-// 	if err != nil {
-// 		return ""
-// 	}
-
-// 	return trtext
-// }
