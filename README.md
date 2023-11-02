@@ -4,10 +4,10 @@
 
 
 ## Overview
-Cling is a real-time CLI chat application designed to bridge language barriers by connecting people from different parts of the world. It leverages the power of the OpenNMT ArgoTranslate machine learning model for real-time message translation. Cling is built on the `Ably Realtime Framework`.
+Cling is a real-time CLI chat application designed to bridge language barriers by connecting people from different parts of the world and enabling them to collaborate without worrying about the language barrier. It leverages the power of the OpenNMT ArgoTranslate machine-learning model for real-time message translation and the `Ably Realtime Framework` for a seamless communication experience.
 
 ### Supported Languages
-Cling supports the following languages with their language codes:
+Cling supports the following languages :
 - **English (en)**
 - **Hindi (hi)**
 - **French (fr)**
@@ -17,7 +17,7 @@ Cling supports the following languages with their language codes:
 - **Spanish (es)**
 -  **Russian (ru)**
 -  **Spanish (es)**
--  **Japanese (js)**
+-  **Japanese (ja)**
 -  **Chinese (zh)**
 
 ## Prerequisites
@@ -27,17 +27,17 @@ Before you get started with Cling, ensure you have the following prerequisites i
 - [Docker](https://www.docker.com/get-started)
 
 ## Setup
-Follow these steps to set up the Cling project:
+Follow these steps to set up the Cling project
 
-1. Run the LibreTranslate Docker container to load supported languages:
-   ```bash
-   docker run -it -p 5000:5000 libretranslate/libretranslate --load-only en,hi,fr,de,it,pl,es,ru
-   ```
-2. Clone the Cling repository:
+1. Run the LibreTranslate Docker container to load supported languages
+```
+docker run -it -p 5000:5000 libretranslate/libretranslate --load-only en,hi,fr,de,it,pl,es,ru,ja,zh
+```
+2. Clone the Cling repository
 
 ```
-git clone <repo_link>
-cd cling
+git clone https://github.com/yrs147/cling-ably.git
+cd cling-ably
 ```
 3. Add the Dependencies
 ```
